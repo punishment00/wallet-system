@@ -10,4 +10,5 @@ use App\Http\Controllers\WalletController;
 
 Route::post('/wallet/deposit', [WalletController::class, 'deposit']);
 Route::post('/wallet/withdraw', [WalletController::class, 'withdraw']);
-Route::get('/wallet/{walletId}', [WalletController::class, 'walletBalance']);
+Route::get('/wallet/balance/{walletId}', [WalletController::class, 'walletBalance']);
+Route::get('/wallet/transaction/{walletId}', [WalletController::class, 'walletTransaction']);

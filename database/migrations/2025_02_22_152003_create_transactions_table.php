@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('wallet_id')->references('id')->on('wallets');
             $table->enum('type', ['deposit', 'withdrawal', 'rebate']);
             $table->decimal('amount', 15, 2);
-            $table->timestamps();
+            // $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

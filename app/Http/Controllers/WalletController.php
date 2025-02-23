@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\RebateJob;
+use Illuminate\Support\Facades\Bus;
 
 class WalletController extends Controller
 {
@@ -32,14 +34,23 @@ class WalletController extends Controller
             // $wallet->balance += $amount;
             $wallet->save();
 
+            // transaction record
+            $wallet->transactions()->create(['type' => 'deposit', 'amount' => $amount]);
+
+            // job
+            // dispatch(new RebateJob($wallet->id, $amount));
+            $rebate_job = new RebateJob($wallet->id, $amount);
+            Bus::dispatchNow($rebate_job);
+
             // reetrieve latest wallet balance
-            $latest_wallet = Wallet::find($wallet_id);
+            // $latest_wallet = Wallet::find($wallet_id);
+            $latest_balance = $this->walletBalance($wallet_id, true);
 
             DB::commit();
 
             return response()->json([
                 'message' => 'Deposit success',
-                'balance' => $latest_wallet->balance
+                'balance' => $latest_balance
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -78,14 +89,18 @@ class WalletController extends Controller
             // $wallet->balance -= $amount;
             $wallet->save();
 
+            // transaction record
+            $wallet->transactions()->create(['type' => 'withdrawal', 'amount' => $amount]);
+
             // reetrieve latest wallet balance
-            $latest_wallet = Wallet::find($wallet_id);
+            // $latest_wallet = Wallet::find($wallet_id);
+            $latest_balance = $this->walletBalance($wallet_id, true);
 
             DB::commit();
 
             return response()->json([
                 'message' => 'Withdraw success',
-                'balance' => $latest_wallet->balance
+                'balance' => $latest_balance
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -95,74 +110,31 @@ class WalletController extends Controller
         }
     }
 
-    public function walletBalance($wallet_id)
+    public function walletBalance($wallet_id, $mode = false)
     {
-        $wallet = Wallet::where('user_id', $wallet_id)->first();
+        $wallet = Wallet::where('id', $wallet_id)->first();
+
+        if (!$wallet) {
+            return $mode ? null : response()->json(['error' => 'Find Wallet not found'], 404);
+        }
+
+        return $mode ? $wallet->balance : response()->json([
+            'message' => 'Wallet balance',
+            'balance' => $wallet->balance
+        ], 200);
+    }
+
+    public function walletTransaction($wallet_id)
+    {
+        $wallet = Wallet::where('id', $wallet_id)->first();
 
         if (!$wallet) {
             return response()->json(['error' => 'Find wallet not found'], 404);
         }
 
         return response()->json([
-            'message' => 'Wallet balance',
-            'balance' => $wallet->balance
+            'message' => 'Wallet transaction',
+            'transaction' => $wallet->transactions()->orderBy('created_at', 'desc')->get()
         ], 200);
-    }
-
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
