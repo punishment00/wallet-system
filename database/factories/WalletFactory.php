@@ -20,7 +20,8 @@ class WalletFactory extends Factory
 
         return [
             'user_id' => $next_user_id++,
-            'balance' => $this->faker->randomFloat(2, 0, 1000),
+            // 'balance' => $this->faker->randomFloat(2, 0, 1000),
+            'balance' => $next_user_id * 100,
         ];
     }
 }

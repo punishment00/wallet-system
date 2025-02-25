@@ -27,6 +27,16 @@ class RebateJob implements ShouldQueue
         $this->amount = $amount;
     }
 
+    public function getWalletId()
+    {
+        return $this->wallet_id;
+    }
+
+    public function getAmount()
+    {
+        return $this->amount;
+    }
+
     /**
      * Execute the job.
      */
@@ -34,6 +44,7 @@ class RebateJob implements ShouldQueue
     {
         DB::beginTransaction();
         try {
+            Log::info("RebateJob started for wallet ID: {$this->wallet_id}, amount: {$this->amount}");
             $wallet = Wallet::where('id', $this->wallet_id)->lockForUpdate()->first();
 
             if ($wallet) {
@@ -46,6 +57,7 @@ class RebateJob implements ShouldQueue
 
                 // transaction record
                 $wallet->transactions()->create(['type' => 'rebate', 'amount' => $rebate_amount]);
+                Log::info("success");
             } else {
                 Log::error("invalid wallet_id " . $this->wallet_id);
             }

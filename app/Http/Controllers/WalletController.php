@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\RebateJob;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 
 class WalletController extends Controller
 {
@@ -23,9 +24,11 @@ class WalletController extends Controller
         DB::beginTransaction();
         try {
             // pessimistic lock
+            // Log::info('testConcurrentDepositsWithRebate: id: ' . $wallet_id);
             $wallet = Wallet::where('id', $wallet_id)->lockForUpdate()->first();
             if (!$wallet) {
                 return response()->json(['error' => 'Deposit Wallet not found'], 404);
+                // throw new \Exception('Withdraw wallet not found');
             }
 
             // update deposit amount
@@ -47,7 +50,7 @@ class WalletController extends Controller
             $latest_balance = $this->walletBalance($wallet_id, true);
 
             DB::commit();
-
+            // Log::info($latest_balance);
             return response()->json([
                 'message' => 'Deposit success',
                 'balance' => $latest_balance
@@ -75,12 +78,16 @@ class WalletController extends Controller
             // pessimistic lock
             $wallet = Wallet::where('id', $wallet_id)->lockForUpdate()->first();
             if (!$wallet) {
-                return response()->json(['error' => 'Withdraw Wallet not found'], 404);
+                // DB::commit();
+                // return response()->json(['error' => 'Withdraw Wallet not found'], 404);
+                throw new \Exception('Withdraw wallet not found');
             }
 
             // balance not enough
             if ($wallet->balance < $amount) {
-                return response()->json(['error' => 'Wallet balance not enough'], 400);
+                // DB::commit();
+                // return response()->json(['error' => 'Wallet balance not enough'], 400);
+                throw new \Exception('Wallet balance not enough');
             }
 
             // update withdraw amount
@@ -105,7 +112,7 @@ class WalletController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'error' => 'ERROR: ' . $e->getMessage()
+                'error' => $e->getMessage()
             ], 400);
         }
     }
