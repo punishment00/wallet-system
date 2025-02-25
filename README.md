@@ -1,3 +1,24 @@
+# Wallet System
+
+### Setting
+
+'base_uri' => 'http://wallet-system.test/'
+
+Database name: wallet_test (MYSQL)
+
+### API
+
+| Usage             | Method | API                            | Request Parameters |
+| ----------------- | ------ | ------------------------------ | ------------------ |
+| Deposit           | POST   | /api/wallet/deposit            | wallet_id, amount  |
+| Withdraw          | POST   | /api/wallet/withdraw           | wallet_id, amount  |
+| Check Balance     | GET    | /wallet/balance/{walletId}     | {walletId}         |
+| Check Transaction | GET    | /wallet/transaction/{walletId} | {walletId}         |
+
+---
+
+<br><br>
+
 # Wallet System - Concurrency Handling
 
 ## 1. Concurrency Problem
