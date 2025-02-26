@@ -12,8 +12,8 @@ Database name: wallet_test (MYSQL)
 | ----------------- | ------ | ------------------------------ | ------------------ |
 | Deposit           | POST   | /api/wallet/deposit            | wallet_id, amount  |
 | Withdraw          | POST   | /api/wallet/withdraw           | wallet_id, amount  |
-| Check Balance     | GET    | /wallet/balance/{walletId}     | {walletId}         |
-| Check Transaction | GET    | /wallet/transaction/{walletId} | {walletId}         |
+| Check Balance     | GET    | /api/wallet/balance/{walletId}     | {walletId}         |
+| Check Transaction | GET    | /api/wallet/transaction/{walletId} | {walletId}         |
 
 ---
 
